@@ -1,63 +1,30 @@
-name: Publish Go Binary
+name: Build for ARMv7
 
 on:
-  push:
-    branches:
-      - main
-
-env:
-  GITHUB_TOKEN: ${{ secrets.GOACTION }}      
+  release:
+    types: [published]
 
 jobs:
-  buildAndDeploy:
+  build-armv7:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-    strategy:
-      matrix:
-        include:
-          - goarch: amd64
-            goos: linux
-          - goarch: amd64
-            goos: darwin
-          - goarch: arm64
-            goos: linux
-          - goarch: arm64
-            goos: darwin
-          - goarch: arm   # ARM32
-            goos: linux
-            
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Set up Go
-        uses: actions/setup-go@v3
-        with: 
-          go-version: '>=1.16.0'
-
-      - run: go version
-      
-      # 编译项目，不执行生成的二进制文件
-      - name: Build project
-        run: |
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} make
-
-      # 打包编译好的二进制文件
-      - name: Packaging...
-        run: |
-          tar czf nodeUpgrade-${{ matrix.goos }}-${{ matrix.goarch }}.tgz nodeUpgrade
-
-      - name: Get version
-        id: version
-        run: echo "::set-output name=version::$(git rev-parse --short HEAD)"
-        
-      - name: Gets latest created release info
-        uses: "marvinpinto/action-automatic-releases@latest"
+        uses: actions/setup-go@v4
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag:  ${{ steps.version.outputs.version }}
-          prerelease: true
-          title: "Development Build"
-          files: |
-            ./nodeUpgrade-${{ matrix.goos }}-${{ matrix.goarch }}.tgz
+          go-version: '1.20'  # Specify the Go version you need
+
+      - name: Build for ARMv7
+        run: |
+          GOOS=linux GOARCH=arm GOARM=7 go build -o iim-client-armv7 main.go
+
+      - name: Upload ARMv7 Binary
+        uses: actions/upload-release-asset@v1
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          release_id: ${{ github.event.release.id }}
+          asset_path: ./iim-client-armv7
+          asset_name: iim-client-armv7
+          asset_content_type: application/octet-stream
