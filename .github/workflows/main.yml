@@ -32,7 +32,7 @@ jobs:
       run: make
       env:
         GOOS: ${{ matrix.goos }}
-        GOARCH: ${{ matrix.goarm }}
+        GOARCH: ${{ matrix.goarch }}
     - name: Packaging...
       run: tar czf nodeUpgrade-${{ matrix.goos }}-${{ matrix.goarch }}.tgz nodeUpgrade
     - name: Get version
