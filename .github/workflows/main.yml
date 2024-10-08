@@ -10,7 +10,7 @@ env:
 
 jobs:
   buildAndDeploy:
-    runs-on: [ 'ubuntu-latest', 'arm64' ]
+    runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
