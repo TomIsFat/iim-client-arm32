@@ -1,9 +1,9 @@
 name: Build for ARMv7
 
 on:
-  release:
-    types: [published]
-
+  push:
+    branches:
+      - main
 jobs:
   build-armv7:
     runs-on: ubuntu-latest
