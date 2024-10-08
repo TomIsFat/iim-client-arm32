@@ -5,25 +5,28 @@ on:
   push:
     branches:
       - main
-
 env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+  GITHUB_TOKEN: ${{ secrets.GOACTION }}      
 jobs:
   buildAndDeploy:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    # 交叉构建,专为 ARMv7 架构编译
+    # 交叉构建, 多平台交叉编译
     strategy:
       matrix:
         include:
-          - goarch: arm
+          - goarch: amd64
             goos: linux
-            goarm: 7  # 指定 ARMv7
-
-    # 使用checkout
+          - goarch: amd64
+            goos: darwin
+          - goarch: arm64
+            goos: linux
+          - goarch: arm64
+            goos: darwin
+          - goarch: arm
+            goos: linux  # 添加 ARM32 支持
+    # 使用 checkout
     steps:
     - uses: actions/checkout@v3
     - name: Set up Go
@@ -35,8 +38,7 @@ jobs:
       run: make
       env:
         GOOS: ${{ matrix.goos }}
-        GOARCH: ${{ matrix.goarch }}
-        GOARM: ${{ matrix.goarm }}
+        GOARCH: ${{ matrix.goarch }}            
     - name: Packaging...
       run: tar czf nodeUpgrade-${{ matrix.goos }}-${{ matrix.goarch }}.tgz nodeUpgrade
     - name: Get version
@@ -50,4 +52,15 @@ jobs:
           prerelease: true
           title: "Development Build"
           files: |
-            ./nodeUpgrade-${{ matrix.goos }}-${{ matrix.goarch }}-${{ matrix.goarm }}.tgz
+            ./nodeUpgrade-${{ matrix.goos }}-${{ matrix.goarch }}.tgz
+#     - name: Uploading assets...
+#       # if: ${{ !env.ACT }}
+#       # id: upload-release-asset 
+#       uses: actions/upload-release-asset@v1
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GOACTION }}
+#       with:
+#         upload_url: ${{ steps.latest_release_info.outputs.upload_url }}
+#         asset_path: ./nodeUpgrade-${{ matrix.goos }}-${{ matrix.goarch }}.tgz
+#         asset_name: nodeUpgrade-${{ matrix.goos }}-${{ matrix.goarch }}.tgz
+#         asset_content_type: application/gzip
