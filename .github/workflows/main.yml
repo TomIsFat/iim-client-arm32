@@ -1,5 +1,6 @@
 name: Publish Go Binary
 
+# 触发条件：在 push 到 main 分支后
 on:
   push:
     branches:
@@ -14,18 +15,20 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    # 交叉构建,专为 ARMv7 架构编译
     strategy:
       matrix:
         include:
           - goarch: arm
             goos: linux
-            goarm: 7
+            goarm: 7  # 指定 ARMv7
 
+    # 使用checkout
     steps:
     - uses: actions/checkout@v3
     - name: Set up Go
       uses: actions/setup-go@v3
-      with:
+      with: 
         go-version: '>=1.16.0'
     - run: go version
     - name: make
@@ -47,4 +50,4 @@ jobs:
           prerelease: true
           title: "Development Build"
           files: |
-            ./nodeUpgrade-${{ matrix.goos }}-${{ matrix.goarch }}.tgz
+            ./nodeUpgrade-${{ matrix.goos }}-${{ matrix.goarch }}-${{ matrix.goarm }}.tgz
