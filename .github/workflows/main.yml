@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - goarch: arm32
+          - goarch: arm
             goos: linux
     # 使用checkout
     steps:
